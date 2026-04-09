@@ -13,6 +13,9 @@ BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "model.pkl"
 
 app = Flask(__name__)
+@app.route('/')
+def home():
+    return "App chal raha hai 🚀"
 
 def load_model() -> Any:
     if not MODEL_PATH.exists():
