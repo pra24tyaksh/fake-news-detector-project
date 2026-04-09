@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fake News Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="panel">
+        <p class="eyebrow">TF-IDF + Logistic Regression</p>
+        <h1>Fake News Detector</h1>
+        <p class="intro">Paste an article link or enter the article text to get an ML-based estimate.</p>
+
+        <form class="detector-form" action="{{ url_for('predict') }}" method="post" data-detector-form>
+          <div class="mode-tabs" role="tablist" aria-label="Choose input type">
+            <button class="mode-tab active" type="button" data-mode="url" role="tab" aria-selected="true">Article link</button>
+            <button class="mode-tab" type="button" data-mode="text" role="tab" aria-selected="false">Article text</button>
+          </div>
+
+          <div class="input-group active" data-panel="url">
+            <label for="url">Article link</label>
+            <input
+              id="url"
+              name="url"
+              type="url"
+              placeholder="https://example.com/news/article"
+              value="{{ form.url if form else '' }}"
+              autocomplete="url"
+            >
+            <p class="field-hint">Best for public article pages with readable body text.</p>
+          </div>
+
+          <div class="input-group" data-panel="text">
+            <div class="label-row">
+              <label for="text">Article text</label>
+              <span class="counter" data-counter>0 characters</span>
+            </div>
+            <textarea
+              id="text"
+              name="text"
+              rows="10"
+              placeholder="Paste the full article text here..."
+            >{{ form.text if form else '' }}</textarea>
+            <p class="field-hint">Use at least 120 characters for a better estimate.</p>
+          </div>
+
+          <p class="form-message" data-form-message>Paste a link or switch to article text.</p>
+          <button class="submit-button" type="submit" data-submit-button>
+            <span data-button-label>Predict</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+      </section>
+
+      <section class="result-panel" aria-live="polite">
+        {% if result %}
+          <p class="eyebrow">Prediction</p>
+          <div class="signal-meter" aria-hidden="true">
+            <span style="width: {{ result.confidence if result.confidence is not none else 50 }}%"></span>
+          </div>
+          <h2 class="prediction {{ result.label | lower }}">{{ result.label }}</h2>
+          {% if result.confidence is not none %}
+            <p class="confidence">{{ result.confidence }}% confidence</p>
+          {% endif %}
+          {% if result.source == "link" and result.extracted_preview %}
+            <p class="preview-label">Extracted preview</p>
+            <p class="preview">{{ result.extracted_preview }}...</p>
+          {% endif %}
+          <p class="disclaimer">{{ result.disclaimer }}</p>
+        {% elif error %}
+          <p class="eyebrow">Check input</p>
+          <h2>Could not predict</h2>
+          <p class="error">{{ error }}</p>
+        {% else %}
+          <p class="eyebrow">Ready</p>
+          <h2>Train, paste, predict.</h2>
+          <p class="disclaimer">Run the training script before your first prediction.</p>
+        {% endif %}
+      </section>
+    </main>
+  </body>
+</html>
